@@ -1,0 +1,35 @@
+graph TD
+    %% Define Node Styles
+    classDef process fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef decision fill:#fff9c4,stroke:#fbc02d,stroke-width:2px;
+    classDef terminator fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;
+    classDef state fill:#f3e5f5,stroke:#6a1b9a,stroke-width:2px,stroke-dasharray: 5 5;
+
+    %% Nodes
+    Start((Start)) --> Init[Initialize History with User Request]
+    Init --> LoopCheck{Iteration Limit Reached?}
+
+    %% The Core Loop
+    subgraph "The Agent Loop"
+        LoopCheck -- No --> Think[THINK: Ask LLM 'What next?' based on History]
+        Think --> CheckResp{Is response a Final Answer?}
+        
+        %% Path 1: Need to use a tool
+        CheckResp -- "No (Tool Call Needed)" --> Act[ACT: Execute code/tool with LLM arguments]
+        Act --> Observe[OBSERVE: Append Tool Output to History]
+        Observe --> LoopCheck
+        
+        %% Path 2: Done
+        CheckResp -- Yes --> FinalOutput[/Present Final Answer to User/]
+    end
+
+    %% Termination Paths
+    LoopCheck -- Yes (Timeout) --> Timeout[/Stop: Max iterations exhausted/]
+    Timeout --> Stop((End))
+    FinalOutput --> Stop
+
+    %% Applying Styles
+    class Init,Think,Act,Observe process;
+    class LoopCheck,CheckResp decision;
+    class Start,Stop terminator;
+    class FinalOutput,Timeout state;
