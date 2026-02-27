@@ -1,0 +1,43 @@
+.gradle
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### IntelliJ IDEA ###
+.idea/modules.xml
+.idea/jarRepositories.xml
+.idea/compiler.xml
+.idea/libraries/
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+### Kotlin ###
+.kotlin
+
+### Mac OS ###
+.DS_Store
+
+### python ###
+**/__pycache__
+.pytest_cache
+.venv
+.env
+cdk.out
+tmp
+.idea
+*.deb
+
+opencode.json
+.opencode
+GEMINI.md
+.gemini
+.codex
+AGENTS.md
+.github
+CLAUDE.md
+.claude
