@@ -2,7 +2,7 @@
 
 Use GitHub Copilot models (Claude Opus 4.6, Sonnet, GPT-5, Gemini, Grok and more) inside Claude Code CLI — all from a pre-configured Dev Container. Zero Anthropic API key needed.
 
-![Architecture](assets/for-loop-agent.mermaid.png)
+![alt text](assets/image.png)
 
 ---
 
