@@ -28,9 +28,13 @@ cmd = "curl http://localhost:4141/v1/models"
 help = "Show local usage endpoint and dashboard URL"
 shell = "echo 'Local API: http://localhost:4141/usage' && echo 'Dashboard: https://ericc-ch.github.io/copilot-api?endpoint=http://localhost:4141/usage'"
 
+[tool.poe.tasks.setup]
+help = "Install missing global CLIs for non-devcontainer usage"
+cmd = "./scripts/setup.sh"
+
 [tool.poe.tasks.claude-chat]
-help = "Launch Claude Code with the workspace configuration"
-cmd = "claude"
+help = "Launch Claude Code via wrapper script (supports optional model override)"
+cmd = "./scripts/start-claude.sh"
 
 [tool.poe.tasks.doctor]
 help = "Verify the core CLI tools are installed"

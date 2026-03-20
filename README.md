@@ -96,13 +96,18 @@ To switch models, update `~/.claude/settings.json` (`ANTHROPIC_MODEL`) and resta
 All project entry points are defined in `/workspaces/claude-remote/pyproject.toml`.
 
 ```bash
+uv run poe setup          # fallback installer for non-devcontainer runs
 uv run poe proxy-auth     # auth only
 uv run poe proxy-start    # auth flow + start proxy for Claude Code
 uv run poe proxy-models   # list available models from the running proxy
 uv run poe proxy-usage    # print usage URLs
-uv run poe claude-chat    # launch Claude Code
+uv run poe claude-chat    # launch Claude via scripts/start-claude.sh
 uv run poe doctor         # verify core tools are installed
 ```
+
+The merged helper scripts are now first-class:
+- `scripts/setup.sh`: fallback installer (useful outside devcontainer)
+- `scripts/start-claude.sh`: exports runtime env vars and starts Claude
 
 ## Monitor Usage
 
@@ -153,7 +158,9 @@ Shell completions for `uv` and `uvx` are enabled automatically.
 │   └── devcontainer.env    # Platform env vars
 ├── pyproject.toml          # uv + Poe task definitions for the workspace
 ├── scripts/
-│   └── post-create.sh      # Syncs uv and writes user-level Claude settings
+│   ├── post-create.sh      # Syncs uv and writes user-level Claude settings
+│   ├── setup.sh            # Fallback installer for non-devcontainer usage
+│   └── start-claude.sh     # Claude launcher with env exports and model override
 ├── assets/
 │   └── for-loop-agent.*    # Architecture diagrams
 ├── clean.sh                # Reset demo state
