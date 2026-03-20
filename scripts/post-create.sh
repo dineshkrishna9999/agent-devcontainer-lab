@@ -22,6 +22,9 @@ sudo touch /commandhistory/.zsh_history
 sudo chown -R "$USERNAME" /commandhistory
 append_line_if_missing "export PROMPT_COMMAND='history -a' && export HISTFILE=/commandhistory/.zsh_history" "$ZSHRC"
 
+# Install global npm packages.
+npm install -g @anthropic-ai/claude-code copilot-api
+
 # Install workspace-only Python tooling declared in pyproject.toml.
 cd "$REPO_ROOT"
 uv sync --dev
