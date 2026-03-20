@@ -1,6 +1,6 @@
 # Agents in your Terminal — Run GitHub Copilot Models in Claude Code
 
-Use GitHub Copilot models (Claude Opus 4.6, Sonnet, GPT-5, Gemini, Grok and more) inside Claude Code CLI — all from a pre-configured Dev Container. Zero Anthropic API key needed.
+Use GitHub Copilot models (Claude Opus 4.6, Sonnet, GPT-5, Gemini, Grok and more) inside Claude Code CLI — all from a pre-configured Dev Container. **Zero Anthropic API key needed. Zero manual setup.**
 
 ![alt text](assets/image.png)
 
@@ -14,12 +14,14 @@ Claude Code CLI  →  copilot-api (localhost:4141)  →  GitHub Copilot Models
 
 The `copilot-api` proxy intercepts Claude Code's Anthropic API calls and routes them to GitHub Copilot's backend. Claude Code thinks it's talking to Anthropic — but it's actually using your Copilot license.
 
+> Everything is pre-installed and pre-configured when the Dev Container starts. The repeatable entry points live in `pyproject.toml` as `uv run poe ...` tasks.
+
 ---
 
 ## Prerequisites
 
 - **GitHub account** with [GitHub Copilot](https://github.com/features/copilot) access (Individual, Business, or Enterprise)
-- **VS Code** with [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) installed
+- **VS Code** with the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) installed
 - **Docker** running locally
 
 ---
@@ -35,77 +37,39 @@ cd agent-devcontainer-lab
 
 Open the folder in VS Code, then **Reopen in Container** when prompted (or run `Dev Containers: Reopen in Container` from the Command Palette).
 
-The Dev Container comes pre-configured with Node.js, Python, Docker-in-Docker, zsh, and more.
+The container automatically installs:
+- `@anthropic-ai/claude-code` — the Claude Code CLI
+- `copilot-api` — the Anthropic-compatible proxy
+- `uv` / `uvx` — fast Python package manager
+- `poethepoet` task runner via `uv sync --dev`
+- Pre-configured `~/.claude/settings.json` pointing at the local proxy
 
-### 2. Install Claude Code and Copilot API
+Design split:
+- `.devcontainer/Dockerfile` installs machine-level tools once
+- `scripts/post-create.sh` keeps only user/workspace setup
+- `pyproject.toml` defines the user-facing commands
 
-Inside the Dev Container terminal:
+### 2. Start the Proxy (authenticate once)
 
-```bash
-npm install -g @anthropic-ai/claude-code
-npm install -g copilot-api
-```
-
-Verify installation:
-
-```bash
-claude --version
-copilot-api --help
-```
-
-### 3. Authenticate with GitHub Copilot
+In the container terminal:
 
 ```bash
-copilot-api start
+uv run poe proxy-start
 ```
 
-This opens a browser window for GitHub authentication. Log in with the account that has Copilot access.
+This opens a browser for GitHub authentication. Log in with your Copilot-enabled account, pick a model when prompted (e.g. `claude-opus-4.6`), and leave the terminal running.
 
-### 4. Start the Proxy in Claude Code Mode
+The canonical interface is the named `uv run poe ...` tasks.
+
+### 3. Launch Claude Code
+
+Open a **new terminal** and run:
 
 ```bash
-copilot-api start --claude-code
+uv run poe claude-chat
 ```
 
-When prompted, select your preferred models (e.g., `claude-opus-4.6`). The proxy starts on `http://localhost:4141`.
-
-Leave this terminal running.
-
-### 5. Configure Claude Code Settings
-
-Create the Claude settings file:
-
-```bash
-mkdir -p ~/.claude
-cat > ~/.claude/settings.json << 'EOF'
-{
-  "env": {
-    "ANTHROPIC_BASE_URL": "http://localhost:4141",
-    "ANTHROPIC_MODEL": "claude-opus-4.6",
-    "ANTHROPIC_API_KEY": "dummy"
-  },
-  "model": "claude-opus-4.6"
-}
-EOF
-```
-
-### 6. Launch Claude Code
-
-Open a **new terminal** and run the full export command provided by `copilot-api`:
-
-```bash
-export ANTHROPIC_BASE_URL=http://localhost:4141 \
-  ANTHROPIC_AUTH_TOKEN=dummy \
-  ANTHROPIC_MODEL=claude-opus-4.6 \
-  ANTHROPIC_DEFAULT_SONNET_MODEL=claude-sonnet-4.6 \
-  ANTHROPIC_SMALL_FAST_MODEL=gpt-5-mini \
-  ANTHROPIC_DEFAULT_HAIKU_MODEL=gpt-5-mini \
-  DISABLE_NON_ESSENTIAL_MODEL_CALLS=1 \
-  CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1 \
-  && claude
-```
-
-Claude Code is now running with GitHub Copilot models!
+That's it — Claude Code is now running with GitHub Copilot models.
 
 ---
 
@@ -123,23 +87,47 @@ Claude Code is now running with GitHub Copilot models!
 | Gemini 3.1 Pro | Google | `gemini-3.1-pro-preview` |
 | Grok Code Fast 1 | xAI | `grok-code-fast-1` |
 
-To switch models, update `settings.json` and the environment variables, then restart Claude Code.
+To switch models, update `~/.claude/settings.json` (`ANTHROPIC_MODEL`) and restart the proxy.
 
 ---
 
-## Monitor Usage
+## Task Commands
 
-Track your Copilot API usage in the browser:
-
-```
-https://ericc-ch.github.io/copilot-api?endpoint=http://localhost:4141/usage
-```
-
-Or via the API directly:
+All project entry points are defined in `/workspaces/claude-remote/pyproject.toml`.
 
 ```bash
+uv run poe proxy-auth     # auth only
+uv run poe proxy-start    # auth flow + start proxy for Claude Code
+uv run poe proxy-models   # list available models from the running proxy
+uv run poe proxy-usage    # print usage URLs
+uv run poe claude-chat    # launch Claude Code
+uv run poe doctor         # verify core tools are installed
+```
+
+## Monitor Usage
+
+```bash
+uv run poe proxy-usage
 curl http://localhost:4141/usage
 ```
+
+Or open the dashboard directly:
+`https://ericc-ch.github.io/copilot-api?endpoint=http://localhost:4141/usage`
+
+---
+
+## Python / uv
+
+`uv` is pre-installed. Use it to manage Python projects and run tools without polluting the global environment:
+
+```bash
+uv init my-project        # new project with pyproject.toml
+uv add requests           # add a dependency
+uvx ruff check .          # run a tool without installing it globally
+uv run python script.py   # run with project venv
+```
+
+Shell completions for `uv` and `uvx` are enabled automatically.
 
 ---
 
@@ -147,11 +135,11 @@ curl http://localhost:4141/usage
 
 | Problem | Fix |
 |---------|-----|
-| Proxy not responding | Ensure `copilot-api start --claude-code` is running in a separate terminal |
+| Proxy not responding | Make sure `uv run poe proxy-start` is running in a separate terminal |
 | Authentication errors | Re-run `copilot-api auth` |
-| Model not found | List models: `curl http://localhost:4141/v1/models` and update settings |
-| Port 4141 in use | Kill the process using it: `lsof -i :4141` then restart the proxy |
-| Claude asks for login | Make sure you set the environment variables before running `claude` |
+| Model not found | `curl http://localhost:4141/v1/models` — pick an ID from the list and update `~/.claude/settings.json` |
+| Port 4141 in use | `lsof -i :4141` → kill the PID, then restart the proxy |
+| `claude` command not found | Rebuild the container, then run `uv run poe doctor` |
 
 ---
 
@@ -160,15 +148,15 @@ curl http://localhost:4141/usage
 ```
 .
 ├── .devcontainer/
-│   ├── Dockerfile          # Python 3.13 base image
-│   ├── devcontainer.json   # Dev Container config with Node, Docker, zsh
-│   └── devcontainer.env    # Environment variables
+│   ├── Dockerfile          # Python base image plus global Claude/Copilot CLIs
+│   ├── devcontainer.json   # Node, uv, Docker-in-Docker, zsh features
+│   └── devcontainer.env    # Platform env vars
+├── pyproject.toml          # uv + Poe task definitions for the workspace
 ├── scripts/
-│   └── post-create.sh      # Shell setup (zsh theme, history)
+│   └── post-create.sh      # Syncs uv and writes user-level Claude settings
 ├── assets/
 │   └── for-loop-agent.*    # Architecture diagrams
 ├── clean.sh                # Reset demo state
-├── copilot_models_in_claude_code.md  # Quick reference notes
 └── README.md               # You are here
 ```
 
