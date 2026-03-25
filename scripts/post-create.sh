@@ -4,26 +4,14 @@ set -euo pipefail
 
 USERNAME=vscode
 USER_HOME="/home/$USERNAME"
-ZSHRC="$USER_HOME/.zshrc"
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-
-append_line_if_missing() {
-    local line="$1"
-    local file="$2"
-
-    if ! grep -Fqx "$line" "$file"; then
-        echo "$line" >> "$file"
-    fi
-}
 
 # Keep shell history across container sessions.
 mkdir -p /commandhistory
 sudo touch /commandhistory/.zsh_history
 sudo chown -R "$USERNAME" /commandhistory
-append_line_if_missing "export PROMPT_COMMAND='history -a' && export HISTFILE=/commandhistory/.zsh_history" "$ZSHRC"
-
-# Install global npm packages.
-npm install -g @anthropic-ai/claude-code copilot-api
+grep -Fqx "export PROMPT_COMMAND='history -a' && export HISTFILE=/commandhistory/.zsh_history" "$USER_HOME/.zshrc" || \
+    echo "export PROMPT_COMMAND='history -a' && export HISTFILE=/commandhistory/.zsh_history" >> "$USER_HOME/.zshrc"
 
 # Install workspace-only Python tooling declared in pyproject.toml.
 cd "$REPO_ROOT"

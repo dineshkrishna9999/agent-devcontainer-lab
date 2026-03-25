@@ -4,20 +4,13 @@ set -euo pipefail
 echo "=== Claude Code + Copilot API Setup ==="
 echo
 
-if ! command -v claude >/dev/null 2>&1; then
-	echo "Installing Claude Code CLI..."
-	npm install -g @anthropic-ai/claude-code
-else
-	echo "Claude Code CLI already installed"
+if ! command -v npm >/dev/null 2>&1; then
+    echo "npm not found. Rebuild the dev container and re-run this script."
+    exit 1
 fi
 
-echo
-if ! command -v copilot-api >/dev/null 2>&1; then
-	echo "Installing Copilot API proxy..."
-	npm install -g copilot-api
-else
-	echo "Copilot API proxy already installed"
-fi
+echo "Installing Claude Code CLI and Copilot API proxy..."
+npm install -g @anthropic-ai/claude-code copilot-api
 
 echo
 echo "Creating Claude settings directory..."

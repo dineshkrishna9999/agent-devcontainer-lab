@@ -145,6 +145,7 @@ Shell completions for `uv` and `uvx` are enabled automatically.
 | Model not found | `curl http://localhost:4141/v1/models` — pick an ID from the list and update `~/.claude/settings.json` |
 | Port 4141 in use | `lsof -i :4141` → kill the PID, then restart the proxy |
 | `claude` command not found | Rebuild the container, then run `uv run poe doctor` |
+| `npm` command not found | Rebuild the container so the updated Docker image (with Node.js/npm) is applied |
 
 ---
 
